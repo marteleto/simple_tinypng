@@ -82,4 +82,4 @@ for dirpath, dirnames, files in os.walk(input_dir):
 		f.write(image_content)
 		f.close()
 		time.sleep(tinypng_api_minimum_request_interval)
-log_warning('spacer')
+log_warning('spacer','')
