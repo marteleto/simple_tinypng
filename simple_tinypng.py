@@ -23,7 +23,7 @@ def filename_has_image_file_extension(filename):
 			return True
 	return False
 
-def log_warning(message_string,message_param):
+def log_warning(message_string,message_param=''):
 	if (message_string == 'spacer'):
 		print '[-]--------------------------------------------------------------------------[-]'
 		return
@@ -32,7 +32,10 @@ def log_warning(message_string,message_param):
 def log_error(error_string,error_param,error_details):
 	print '[E] %s %s Details: %s' % (error_string,error_param,error_details)
 
-log_warning('Processing Images','')
+def delay():
+	time.sleep(tinypng_api_minimum_request_interval)
+
+log_warning('Processing Images')
 
 os.system("rm -rf %s" % output_dir)
 os.system("mkdir %s" % output_dir)
@@ -45,7 +48,7 @@ for dirpath, dirnames, files in os.walk(input_dir):
 				source_path = os.path.join(dirpath, f)
 				output_path = os.path.join(output_path_for_dirpath(dirpath), f)
 				os.system("cp %s %s" % (source_path,output_path))
-				log_warning('spacer','')
+				log_warning('spacer')
 				log_warning('Copied',f)
 			continue
 		
@@ -55,7 +58,7 @@ for dirpath, dirnames, files in os.walk(input_dir):
 		fh = open(source_path,'rb')
 		filecontent = fh.read()
 		
-		log_warning('spacer','')
+		log_warning('spacer')
 		log_warning('Compressing',f)
 
 		r = requests.post(
@@ -70,16 +73,17 @@ for dirpath, dirnames, files in os.walk(input_dir):
 			log_error('Error Compressing',f,request_response)
 			continue
 		compressed_image_url = request_response['output']['url']
-		log_warning('Finished compressing','')
-		time.sleep(tinypng_api_minimum_request_interval)
+		percent_compressed = ('%s%%' % (100 - (request_response['output']['ratio'] * 100))).replace('.',',')
+		log_warning('Finished compressing %s' % percent_compressed)
+		delay()
 		log_warning('Downloading from',compressed_image_url)
 		download_request = requests.get(compressed_image_url)
-		log_warning('Finished downloading','')
-		log_warning('Saving','')
+		log_warning('Finished downloading')
+		log_warning('Saving')
 		image_content = BytesIO(download_request.content).read()
 		file_location = os.path.join(output_path_for_dirpath(dirpath),f)
 		f = open(file_location,'wb')
 		f.write(image_content)
 		f.close()
-		time.sleep(tinypng_api_minimum_request_interval)
-log_warning('spacer','')
+		delay()
+log_warning('spacer')
